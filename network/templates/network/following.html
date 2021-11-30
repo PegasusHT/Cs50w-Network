@@ -1,0 +1,61 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+
+    {% if user.is_authenticated %}
+
+        <h1> Following </h1>
+        <div class="py-3 container col-md-8 border">
+            <h4><b> New Post </b></h4>
+            <form action="{% url 'create' %}" method="POST">
+                {% csrf_token %}
+                <textarea class="form-control" name="create_content"></textarea>
+                <input type="submit" class="btn btn-primary" value="Post"/>
+            </form>
+        </div>
+
+        {% for post in posts %}
+        <br>
+        <div class="py-3 container col-md-8 border">
+            <h4><a class="nav-link" href="{% url 'profile' post.user %}">{{post.user}}</a></h4>
+            <h6><b> {{ post.content }}</b><br><br>
+                {{ post.timestamp }}<br>
+
+                {% if not request.user in post.liked_by.all %}
+                    <button type="button" class="liked" data-is_liked="true"
+                        data-id="{{post.id}}"> Like </button>
+                {% else %}
+                    <button type="button" class="liked" data-is_liked="false"
+                        data-id="{{post.id}}"> Unlike </button>
+                {% endif %}
+                
+                <span id="like_num"> {{ post.likes }} </span>
+            </h6>
+        </div>
+        {% endfor %}
+    
+        <div class="d-flex justify-content-center">
+            <div class="pagination" >
+                <span class="step-links" >
+                    {% if posts.has_previous %}
+                        <a href="?page={{ posts.previous_page_number }}">previous</a>
+                    {% endif %}
+            
+                    <span class="current">
+                        Page {{ posts.number }} of {{ posts.paginator.num_pages }}
+                    </span>
+            
+                    {% if posts.has_next %}
+                        <a href="?page={{ posts.next_page_number }}">next</a>
+                    {% endif %}
+                </span>
+            </div>
+        </div>
+
+    {% endif %}
+{% endblock %}
+
+{% block script %}
+
+{% endblock %}

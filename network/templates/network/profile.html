@@ -1,0 +1,73 @@
+{% extends "network/layout.html" %}
+{% load static %}
+
+{% block body %}
+<h1> {{ username }} </h1>
+
+{% if user.username != username %}
+
+<button id="follow-bttn" data-profile="{{ username }}">{{follow_btn}}</button>
+{% endif %}
+
+<a><b>Followers:</b> <span id="followers_num">{{ followers }}</span></a>
+<a><b>Following:</b> {{ following_num }}</a>
+<br>
+
+{% for post in posts %}
+    <br>
+    <div class="py-3 container col-md-8 border">
+        <h4><a class="nav-link" href="{% url 'profile' post.user %}">{{post.user}}</a></h4>
+        {% if user.username == username %}
+            <button class="nav-item" style="color: blueviolet"
+                post-id="{{post.id}}" id="post-edit-{{post.id}}"
+                onclick="edit(this)"> Edit </button>
+        {% endif %}
+        <h6><b id="post-content-{{post.id}}"> {{ post.content }}</b><br><br>
+            <textarea id="post-text-{{post.id}}"
+                style="display: none;"></textarea>
+            <button class="nav-item" 
+                post-id="{{post.id}}" id="post-save-{{post.id}}"
+                style="display: none; color:blueviolet" 
+                onclick="saveHandler(this)"> Save </button>
+            {{ post.timestamp }}<br>
+            <img
+            post-id="{{post.id}}" onclick="like(this)"
+            id="post-like-{{post.id}}" style="max-width: 25px;"
+                {% if not request.user in post.liked_by.all %}
+                    is-liked="False" 
+                    src="https://img.icons8.com/carbon-copy/100/000000/like--v2.png"
+                {%else%}
+                    is-liked="True"
+                    src="https://img.icons8.com/plasticine/100/000000/like.png"
+                {%endif%}
+            />
+            <span id="post-numLike-{{post.id}}"> {{ post.likes }} </span>
+        </h6>
+    </div>
+{% endfor %}
+
+<div class="d-flex justify-content-center">
+    <div class="pagination" >
+        <span class="step-links" >
+            {% if posts.has_previous %}
+                <a href="?page={{ posts.previous_page_number }}">previous</a>
+            {% endif %}
+    
+            <span class="current">
+                Page {{ posts.number }} of {{ posts.paginator.num_pages }}
+            </span>
+    
+            {% if posts.has_next %}
+                <a href="?page={{ posts.next_page_number }}">next</a>
+            {% endif %}
+        </span>
+    </div>
+</div>
+
+{% endblock %}
+
+{% block script %}
+    <script src="{% static 'network/follow.js' %}"></script>
+    <script src="{% static 'network/edit.js' %}"></script>
+    <script src="{% static 'network/like.js' %}"></script>
+{% endblock %}
