@@ -28,9 +28,20 @@ The behavior is implemented by JavaScript, so we don't need to re-render the pag
 ![Like behavior](/images/like.png)<br>
 
 ## Run Application
-In the project4 directory, start the Django application.
+
+1. You need to have python3. 
+Then, you need to install pip and Django:
 ```shell
-cd project4/
+python3 -m ensurepip
+pip3 install Django 
+```
+
+2. Run `python manage.py makemigrations network` to make migrations for the network app.
+
+1. Run `python manage.py migrate` to apply migrations to your database
+
+1. In the project4 directory, start the Django application.
+```shell
 python3 manage.py runserver
 ```
 
