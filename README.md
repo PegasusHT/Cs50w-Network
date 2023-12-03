@@ -36,9 +36,9 @@ python3 -m ensurepip
 pip3 install Django 
 ```
 
-2. Run `python manage.py makemigrations network` to make migrations for the network app.
+2. Run `python3 manage.py makemigrations network` to make migrations for the network app.
 
-1. Run `python manage.py migrate` to apply migrations to your database
+1. Run `python3 manage.py migrate` to apply migrations to your database
 
 1. In the project4 directory, start the Django application.
 ```shell
