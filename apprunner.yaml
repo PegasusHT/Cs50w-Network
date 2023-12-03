@@ -2,18 +2,11 @@ version: 1.0
 runtime: python3
 build:
   commands:
-    prebuild:
-      - python3 -m venv .venv
-    build:
-      - source .venv/bin/activate
-      - pip install -r requirements.txt
+    install:
+      - pip install --user -r requirements.txt
 
 run:
   runtime-version: 3.8.16
-  command: '/app/.venv/bin/gunicorn --bind 0.0.0.0:$PORT your_project.wsgi'
-  environment:
-    PORT: 8000
+  command: sh startup.sh
   network:
-    ports:
-      - port: 8000
-        protocol: tcp
+    port: 8000
