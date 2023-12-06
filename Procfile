@@ -1,1 +1,1 @@
-web: gunicorn Cs50w-Network.wsgi --log-file -
+web: gunicorn project4.wsgi --log-file -
