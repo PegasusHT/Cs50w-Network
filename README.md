@@ -45,3 +45,5 @@ pip3 install Django
 python3 manage.py runserver
 ```
 
+### Future Update
+Move the hosting to AWS since they offer free basic tier service.
