@@ -4,7 +4,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonRespons
 from django.shortcuts import render
 from django.urls import reverse
 import json
-
+from django.shortcuts import get_object_or_404
 from .models import *
 from django import forms
 from django.views.decorators.csrf import csrf_exempt
@@ -105,12 +105,14 @@ def profile(request, username):
     following_num = user.following_num
 
     current_user = request.user
-    profile = User.objects.get(username=username)
-    profile_temp = Followings.objects.get(user=profile)
-    followed= profile_temp.followed_by.all()
-    if(current_user in followed):   
-        follow_btn = "Unfollow"
-    else:
+    try:
+        profile_temp = Followings.objects.get(user=user)
+        followed = profile_temp.followed_by.all()
+        if current_user in followed:   
+            follow_btn = "Unfollow"
+        else:
+            follow_btn = "Follow"
+    except Followings.DoesNotExist:
         follow_btn = "Follow"
 
     return render(request, "network/profile.html", {
@@ -145,38 +147,33 @@ def like(request):
 # return Json follower_num and button text Follow/Unfollow
 def follow(request):
     user = request.user
-    profile_user = str(request.GET.get("profile_user") or "")
-    profile = User.objects.get(username=profile_user)
-    profile_user = Followings.objects.get(user=user)
-    profile_profile = Followings.objects.get(user=profile)
+    profile_username = request.GET.get("profile_user") or ""
+    profile = get_object_or_404(User, username=profile_username)
+
+    profile_user, _ = Followings.objects.get_or_create(user=user)
+
+    profile_profile, _ = Followings.objects.get_or_create(user=profile)
+
     profile_follows = profile_profile.followed_by.all()
     follower_num = profile.followers
-    
-    if(user in profile_follows):
+
+    if user in profile_follows:
         text = "Follow"
         profile.followers -= 1
-        user.following_num -=1
-        profile.save()
-        user.save()
-        follower_num = profile.followers
-
-        profile_user.following.remove(profile)
-        profile_user.save()
+        user.following_num -= 1
         profile_profile.followed_by.remove(user)
-        profile_profile.save()
-
+        profile_user.following.remove(profile)
     else:
         text = "Unfollow"
         profile.followers += 1
         user.following_num += 1
-        user.save()
-        profile.save()
-        follower_num = profile.followers
-
-        profile_user.following.add(profile)
-        profile_user.save()
         profile_profile.followed_by.add(user)
-        profile_profile.save()
+        profile_user.following.add(profile)
+
+    profile.save()
+    user.save()
+    profile_profile.save()
+    profile_user.save()
 
     return JsonResponse({
         "text": text,
@@ -188,8 +185,12 @@ def follow(request):
 # get all posts from followed users
 def following(request):
     user = request.user
-    profile_user = Followings.objects.get(user=user)
-    followed_users = profile_user.following.all()
+    try:
+        profile_user = Followings.objects.get(user=user)
+        followed_users = profile_user.following.all()
+    except Followings.DoesNotExist:
+        # Handle the case where Followings instance does not exist for the user
+        followed_users = []
     
     posts_list = Posts.objects.filter(user__in=followed_users)
     posts_list = posts_list.order_by("-timestamp").all()
@@ -197,7 +198,6 @@ def following(request):
     paginator = Paginator(posts_list, 10)
     page_number = request.GET.get('page')
     posts_list = paginator.get_page(page_number)
-
     return render(request, "network/following.html", {
         "posts": posts_list,
     })
